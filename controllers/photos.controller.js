@@ -31,7 +31,7 @@ exports.add = async (req, res) => {
       const fileExt = fileName.split(".").slice(-1)[0];
 
       if (
-        (fileExt === "jpg" || "png" || "gif") &&
+        (fileExt === "jpg" || fileExt === "png" || fileExt === "gif") &&
         title.length <= 25 &&
         author.length <= 50
       ) {
