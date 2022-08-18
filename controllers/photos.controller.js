@@ -28,7 +28,7 @@ exports.add = async (req, res) => {
         throw new Error("Email is not valid");
       }
 
-      const fileName = file.path.split("/").slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
+      const fileName = path.basename(file.path);
       const fileExt = path.extname(fileName);
 
       if (
