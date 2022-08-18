@@ -1,6 +1,7 @@
 const Photo = require("../models/photo.model");
 const Voter = require("../models/Voter.model");
 const requestIp = require("request-ip");
+const path = require("path");
 
 /****** SUBMIT PHOTO ********/
 
@@ -28,14 +29,13 @@ exports.add = async (req, res) => {
       }
 
       const fileName = file.path.split("/").slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
-      const fileExt = fileName.split(".").slice(-1)[0];
+      const fileExt = path.extname(fileName);
 
       if (
-        (fileExt === "jpg" || fileExt === "png" || fileExt === "gif") &&
+        (fileExt === ".jpg" || fileExt === ".png" || fileExt === ".gif") &&
         title.length <= 25 &&
         author.length <= 50
       ) {
-        console.log(fileExt);
         const newPhoto = new Photo({
           title,
           author,
