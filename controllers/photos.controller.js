@@ -76,26 +76,29 @@ exports.vote = async (req, res) => {
     const findUser = await Voter.findOne({ user: userIP });
     const photoToUpdate = await Photo.findOne({ _id: req.params.id });
 
-    if (findUser) {
-      const findUserVote = findUser.votes.includes(photoToUpdate._id);
-      if (findUserVote) {
-        res.status(500).json(err);
+    if (!photoToUpdate) {
+      res.status(404).json({ message: "Not found" });
+    } else {
+      if (findUser) {
+        const findUserVote = findUser.votes.includes(photoToUpdate._id);
+        if (findUserVote) {
+          res.status(500).json(err);
+        } else {
+          photoToUpdate.votes++;
+          await photoToUpdate.save();
+          res.send({ message: "OK" });
+        }
       } else {
+        const newVoter = new Voter({
+          user: userIP,
+          $push: { votes: photoToUpdate._id },
+        });
+        await newVoter.save();
         photoToUpdate.votes++;
         await photoToUpdate.save();
         res.send({ message: "OK" });
       }
-    } else {
-      const newVoter = new Voter({
-        user: userIP,
-        $push: { votes: photoToUpdate._id },
-      });
-      await newVoter.save();
-      photoToUpdate.votes++;
-      await photoToUpdate.save();
-      res.send({ message: "OK" });
     }
-    if (!photoToUpdate) res.status(404).json({ message: "Not found" });
   } catch (err) {
     res.status(500).json(err);
   }
