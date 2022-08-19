@@ -6,11 +6,11 @@ const path = require("path");
 /****** SUBMIT PHOTO ********/
 
 exports.add = async (req, res) => {
-  const titleMaxLength = 25;
-  const authorMaxLength = 50;
   try {
     const { title, author, email } = req.fields;
     const file = req.files.file;
+    const titleMaxLength = 25;
+    const authorMaxLength = 50;
 
     if (title && author && email && file) {
       // if fields are not empty...
