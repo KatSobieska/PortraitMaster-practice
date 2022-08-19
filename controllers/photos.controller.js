@@ -6,6 +6,8 @@ const path = require("path");
 /****** SUBMIT PHOTO ********/
 
 exports.add = async (req, res) => {
+  const titleMaxLength = 25;
+  const authorMaxLength = 50;
   try {
     const { title, author, email } = req.fields;
     const file = req.files.file;
@@ -33,8 +35,8 @@ exports.add = async (req, res) => {
 
       if (
         (fileExt === ".jpg" || fileExt === ".png" || fileExt === ".gif") &&
-        title.length <= 25 &&
-        author.length <= 50
+        title.length <= titleMaxLength &&
+        author.length <= authorMaxLength
       ) {
         const newPhoto = new Photo({
           title,
@@ -93,7 +95,6 @@ exports.vote = async (req, res) => {
       await photoToUpdate.save();
       res.send({ message: "OK" });
     }
-
     if (!photoToUpdate) res.status(404).json({ message: "Not found" });
   } catch (err) {
     res.status(500).json(err);
