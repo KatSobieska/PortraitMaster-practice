@@ -12,9 +12,9 @@ exports.add = async (req, res) => {
     const titleMaxLength = 25;
     const authorMaxLength = 50;
 
-    if (title && author && email && file) {
-      // if fields are not empty...
-
+    if (!title && !author && !email && !file) {
+      throw new Error("Wrong input!");
+    } else {
       const authorPattern = new RegExp(
         /(<\s*(strong|em)*>(([A-z]|\s)*)<\s*\/\s*(strong|em)>)|(([A-z]|\s|\.)*)/,
         "g"
@@ -33,25 +33,26 @@ exports.add = async (req, res) => {
       const fileName = path.basename(file.path);
       const fileExt = path.extname(fileName);
 
-      if (
-        (fileExt === ".jpg" || fileExt === ".png" || fileExt === ".gif") &&
-        title.length <= titleMaxLength &&
-        author.length <= authorMaxLength
-      ) {
-        const newPhoto = new Photo({
-          title,
-          author,
-          email,
-          src: fileName,
-          votes: 0,
-        });
-        await newPhoto.save(); // ...save new photo in DB
-        res.json(newPhoto);
-      } else {
+      if (!fileExt === ".jpg" || !fileExt === ".png" || !fileExt === ".gif") {
         throw new Error("Wrong file type!");
+      } else {
+        if (
+          !title.length >= titleMaxLength &&
+          !author.length >= authorMaxLength
+        ) {
+          throw new Error("Wrong field length!");
+        } else {
+          const newPhoto = new Photo({
+            title,
+            author,
+            email,
+            src: fileName,
+            votes: 0,
+          });
+          await newPhoto.save(); // ...save new photo in DB
+          res.json(newPhoto);
+        }
       }
-    } else {
-      throw new Error("Wrong input!");
     }
   } catch (err) {
     res.status(500).json(err);
