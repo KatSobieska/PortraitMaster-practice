@@ -13,47 +13,41 @@ exports.add = async (req, res) => {
     const authorMaxLength = 50;
 
     if (!title && !author && !email && !file) {
-      throw new Error("Wrong input!");
-    } else {
-      const authorPattern = new RegExp(
-        /(<\s*(strong|em)*>(([A-z]|\s)*)<\s*\/\s*(strong|em)>)|(([A-z]|\s|\.)*)/,
-        "g"
-      );
-      const emailPattern = new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, "g");
-
-      const authorMatched = author.match(authorPattern).join("");
-      const emailMatched = email.match(emailPattern).join("");
-
-      if (authorMatched.length < author.length) {
-        throw new Error("Author is not valid");
-      } else if (emailMatched.length < email.length) {
-        throw new Error("Email is not valid");
-      }
-
-      const fileName = path.basename(file.path);
-      const fileExt = path.extname(fileName);
-
-      if (!fileExt === ".jpg" || !fileExt === ".png" || !fileExt === ".gif") {
-        throw new Error("Wrong file type!");
-      } else {
-        if (
-          !title.length >= titleMaxLength &&
-          !author.length >= authorMaxLength
-        ) {
-          throw new Error("Wrong field length!");
-        } else {
-          const newPhoto = new Photo({
-            title,
-            author,
-            email,
-            src: fileName,
-            votes: 0,
-          });
-          await newPhoto.save(); // ...save new photo in DB
-          res.json(newPhoto);
-        }
-      }
+      return new Error("Wrong input!");
     }
+    const authorPattern = new RegExp(
+      /(<\s*(strong|em)*>(([A-z]|\s)*)<\s*\/\s*(strong|em)>)|(([A-z]|\s|\.)*)/,
+      "g"
+    );
+    const emailPattern = new RegExp(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, "g");
+
+    const authorMatched = author.match(authorPattern).join("");
+    const emailMatched = email.match(emailPattern).join("");
+
+    if (authorMatched.length < author.length) {
+      throw new Error("Author is not valid");
+    } else if (emailMatched.length < email.length) {
+      throw new Error("Email is not valid");
+    }
+
+    const fileName = path.basename(file.path);
+    const fileExt = path.extname(fileName);
+
+    if (!fileExt === ".jpg" || !fileExt === ".png" || !fileExt === ".gif") {
+      return new Error("Wrong file type!");
+    }
+    if (!title.length >= titleMaxLength && !author.length >= authorMaxLength) {
+      return new Error("Wrong field length!");
+    }
+    const newPhoto = new Photo({
+      title,
+      author,
+      email,
+      src: fileName,
+      votes: 0,
+    });
+    await newPhoto.save(); // ...save new photo in DB
+    res.json(newPhoto);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -78,27 +72,25 @@ exports.vote = async (req, res) => {
     const photoToUpdate = await Photo.findOne({ _id: req.params.id });
 
     if (!photoToUpdate) {
-      res.status(404).json({ message: "Not found" });
-    } else {
-      if (findUser) {
-        const findUserVote = findUser.votes.includes(photoToUpdate._id);
-        if (findUserVote) {
-          res.status(500).json(err);
-        } else {
-          photoToUpdate.votes++;
-          await photoToUpdate.save();
-          res.send({ message: "OK" });
-        }
-      } else {
-        const newVoter = new Voter({
-          user: userIP,
-          $push: { votes: photoToUpdate._id },
-        });
-        await newVoter.save();
-        photoToUpdate.votes++;
-        await photoToUpdate.save();
-        res.send({ message: "OK" });
+      return res.status(404).json({ message: "Not found" });
+    }
+    if (findUser) {
+      const findUserVote = findUser.votes.includes(photoToUpdate._id);
+      if (findUserVote) {
+        return res.status(500).json(err);
       }
+      photoToUpdate.votes++;
+      await photoToUpdate.save();
+      res.send({ message: "OK" });
+    } else {
+      const newVoter = new Voter({
+        user: userIP,
+        $push: { votes: photoToUpdate._id },
+      });
+      await newVoter.save();
+      photoToUpdate.votes++;
+      await photoToUpdate.save();
+      res.send({ message: "OK" });
     }
   } catch (err) {
     res.status(500).json(err);
