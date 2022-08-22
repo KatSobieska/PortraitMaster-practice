@@ -25,9 +25,10 @@ exports.add = async (req, res) => {
     const emailMatched = email.match(emailPattern).join("");
 
     if (authorMatched.length < author.length) {
-      throw new Error("Author is not valid");
-    } else if (emailMatched.length < email.length) {
-      throw new Error("Email is not valid");
+      return new Error("Author is not valid");
+    }
+    if (emailMatched.length < email.length) {
+      return new Error("Email is not valid");
     }
 
     const fileName = path.basename(file.path);
@@ -82,16 +83,15 @@ exports.vote = async (req, res) => {
       photoToUpdate.votes++;
       await photoToUpdate.save();
       res.send({ message: "OK" });
-    } else {
-      const newVoter = new Voter({
-        user: userIP,
-        $push: { votes: photoToUpdate._id },
-      });
-      await newVoter.save();
-      photoToUpdate.votes++;
-      await photoToUpdate.save();
-      res.send({ message: "OK" });
     }
+    const newVoter = new Voter({
+      user: userIP,
+      $push: { votes: photoToUpdate._id },
+    });
+    await newVoter.save();
+    photoToUpdate.votes++;
+    await photoToUpdate.save();
+    return res.send({ message: "OK" });
   } catch (err) {
     res.status(500).json(err);
   }
