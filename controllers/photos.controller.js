@@ -13,7 +13,7 @@ exports.add = async (req, res) => {
     const authorMaxLength = 50;
 
     if (!title && !author && !email && !file) {
-      return new Error("Wrong input!");
+      throw new Error("Wrong input!");
     }
     const authorPattern = new RegExp(
       /(<\s*(strong|em)*>(([A-z]|\s)*)<\s*\/\s*(strong|em)>)|(([A-z]|\s|\.)*)/,
@@ -25,20 +25,20 @@ exports.add = async (req, res) => {
     const emailMatched = email.match(emailPattern).join("");
 
     if (authorMatched.length < author.length) {
-      return new Error("Author is not valid");
+      throw new Error("Author is not valid");
     }
     if (emailMatched.length < email.length) {
-      return new Error("Email is not valid");
+      throw new Error("Email is not valid");
     }
 
     const fileName = path.basename(file.path);
     const fileExt = path.extname(fileName);
 
     if (!fileExt === ".jpg" || !fileExt === ".png" || !fileExt === ".gif") {
-      return new Error("Wrong file type!");
+      throw new Error("Wrong file type!");
     }
     if (!title.length >= titleMaxLength && !author.length >= authorMaxLength) {
-      return new Error("Wrong field length!");
+      throw new Error("Wrong field length!");
     }
     const newPhoto = new Photo({
       title,
@@ -78,11 +78,11 @@ exports.vote = async (req, res) => {
     if (findUser) {
       const findUserVote = findUser.votes.includes(photoToUpdate._id);
       if (findUserVote) {
-        return res.status(500).json(err);
+        return res.status(500).json({ message: "You can't vote twice" });
       }
       photoToUpdate.votes++;
       await photoToUpdate.save();
-      res.send({ message: "OK" });
+      return res.send({ message: "OK" });
     }
     const newVoter = new Voter({
       user: userIP,
